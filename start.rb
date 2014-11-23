@@ -104,7 +104,7 @@ def check_score(players_hand, computers_hand)
   else
     puts "You have push"
   end
-ends
+end
 
 
 ###########
@@ -133,6 +133,7 @@ begin
 
   is_exit = true if check_black_jack(players_hand, computers_hand)
   is_exit = true if check_busted(players_hand, computers_hand)
+
   if is_exit == false
     begin
       puts "Do you want to hit or stay? (h/s)"
@@ -141,14 +142,15 @@ begin
     
     if choice == "h"
       players_hand << get_card(deck)
-    else
-      if is_hit?(computers_hand)
-        computers_hand << get_card(deck) 
-      else
-        check_score(players_hand, computers_hand)
-        is_exit = true
-      end
     end
+      
+    if is_hit?(computers_hand)
+      computers_hand << get_card(deck) 
+    else
+      check_score(players_hand, computers_hand)
+      is_exit = true
+    end
+    
   end
 
 end while is_exit == false
