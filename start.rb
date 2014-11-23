@@ -23,6 +23,7 @@ def get_shuffled_deck()
  deck.shuffle!
 end
 
+# small cheat - if the deck is almost empty - add another deck #
 def check_n_deck(deck)
   deck = get_shuffled_deck if deck.count <= 4
   deck
@@ -62,7 +63,6 @@ end
 def is_computer_hits?(hand)
   true if value_in_hand(hand) < DEALERS_LIMIT
 end
-
 
 def check_exit_cases(hand, player, is_exit)
   
@@ -129,7 +129,6 @@ begin
   players_hand = []
   computers_hand = []
 
-  # small cheat - if the deck is almost empty - add another deck #
   deck = check_n_deck(deck)
   2.times { players_hand << get_card(deck) && computers_hand << get_card(deck) }
 
@@ -176,7 +175,7 @@ begin
     end
 
   end
-  p deck.count
+
   is_exit = "false"
   puts "Do you want to play more? (y/n)"
 end while gets.chomp.downcase == "y"
