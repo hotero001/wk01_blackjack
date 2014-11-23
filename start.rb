@@ -2,14 +2,13 @@
 
 require "pry"
 
-
 BLACK_JACK = 21
 DEALERS_LIMIT = 17
 ACE_MAX_VALUE = 11
 
 def get_shuffled_deck()
-  suits = [:heart, :diamond, :spade, :club]
-  cards = [2, 3, 4, 5, 6, 7, 8, 9, 10, :jack, :queen, :king, :ace]
+  suits = [:♤, :♧, :♥, :♦]
+  cards = [2, 3, 4, 5, 6, 7, 8, 9, 10, :j, :q, :k, :a]
 
   deck = suits.product(cards)
 
@@ -35,64 +34,45 @@ end
 def value_in_hand(hand)
   value = 0
   ace_in_hand = 0
-  hand.each do |card| 
-    if card[2] == 1 && hand.count == 2
-      value += 11
-    elsif card[2] == 1 && hand.count > 2
-      ace_in_hand += 1
+
+  hand.each do |card|
+    if card[2] == 1
+      ace_in_hand += 1 
     else
       value += card[2]
     end
   end
+
   if ace_in_hand > 0
-    if value >= ACE_MAX_VALUE
-      value += ace_in_hand
+    if value == 9 && ace_in_hand == 2
+      value += 12   # soft 12 #
     else
-      value += ACE_MAX_VALUE
+      value += ace_in_hand
     end
   end
+
   value
 end
 
-def is_hit?(hand)
+def is_computer_hits?(hand)
   true if value_in_hand(hand) < DEALERS_LIMIT
 end
 
-def is_black_jack?(hand)
-  true if value_in_hand(hand) == BLACK_JACK
-end
 
-def is_busted?(hand)
-  true if value_in_hand(hand) > BLACK_JACK
-end
-
-def check_black_jack(players_hand, computers_hand)
-  if is_black_jack?(computers_hand) && is_black_jack?(players_hand)
-    puts "You both have Black Jack!"
-    true
+def check_exit_cases(hand, player, is_exit)
+  
+  if value_in_hand(hand) == BLACK_JACK
+    player == :player ? puts("You wins!") : puts("Computer wins!")
+    is_exit.replace "true"
+    return true
   end
 
-  if is_black_jack?(computers_hand)
-    puts("Computer wins!")
+  if value_in_hand(hand) > BLACK_JACK
+    player == :player ? puts("You are busted") : puts("Computer is busted")
+    is_exit.replace "true"
     return true 
   end
 
-  if is_black_jack?(players_hand) 
-    puts("You win!") 
-    return true
-  end
-end
-
-def check_busted(players_hand, computers_hand)
-  if is_busted?(players_hand) 
-    puts "You are busted"
-    return true
-  end
-
-  if is_busted?(computers_hand)
-    puts "Computer is busted"
-    return true
-  end
 end
 
 def check_score(players_hand, computers_hand)
@@ -106,57 +86,94 @@ def check_score(players_hand, computers_hand)
   end
 end
 
+def print_hands(players_hand, computers_hand)
+  system "cls" or system "clear"
+  puts 
+  puts "COMPUTER: #{value_in_hand(computers_hand)}"
+  computers_hand.each { |card| print_card(card) }
+  puts
+  puts "PLAYER: #{value_in_hand(players_hand)}"
+  players_hand.each { |card| print_card(card) }
+  puts
+end
 
-###########
-# POLYGON #
-###########
+def hit_or_stay?
+  begin
+    puts "Do you want to hit or stay? (h/s)"
+    choice = gets.chomp.downcase
+  end until choice == "h" || choice == "s"
+  if choice == "h"
+    :hit
+  else
+    :stay
+  end
+end
+
+##############
+# PLAYGROUND #
+##############
 
 deck = []
-players_hand = []
-computers_hand = []
+is_exit = "false"
 
 deck = get_shuffled_deck
 
-2.times { players_hand << get_card(deck) && computers_hand << get_card(deck) }
-
-is_exit = false
-
 begin
-  puts "COMPUTER:"
-  computers_hand.each { |card| print_card(card) }
-  puts "Value = #{value_in_hand(computers_hand)}"
-  puts
-  puts "PLAYER:"
-  players_hand.each { |card| print_card(card) }
-  puts "Value = #{value_in_hand(players_hand)}"
-  puts 
 
-  is_exit = true if check_black_jack(players_hand, computers_hand)
-  is_exit = true if check_busted(players_hand, computers_hand)
+  players_hand = []
+  computers_hand = []
 
-  if is_exit == false
-    begin
-      puts "Do you want to hit or stay? (h/s)"
-      choice = gets.chomp.downcase
-    end until choice == "h" || choice == "s"
+  # small cheat - if the deck is almost empty - add another deck #
+  deck << get_shuffled_deck if deck.count < 4
+  2.times { players_hand << get_card(deck) && computers_hand << get_card(deck) }
+
+  choice = :hit
+
+  # Player's part #
+  begin
+
+    print_hands(players_hand, computers_hand)
+    break if check_exit_cases(players_hand, :player, is_exit) 
+    break if check_exit_cases(computers_hand, :computer, is_exit)
     
-    if choice == "h"
-      players_hand << get_card(deck)
-    end
+    choice = hit_or_stay?
+          
+    if choice == :hit
       
-    if is_hit?(computers_hand)
-      computers_hand << get_card(deck) 
+      deck = get_shuffled_deck if deck.count == 0
+      players_hand << get_card(deck)
+
+      print_hands(players_hand, computers_hand)
+      break if check_exit_cases(players_hand, :player, is_exit)
+
+    end
+
+  end while choice == :hit
+
+  # Computer's part #
+  while is_exit == "false"
+
+    if is_computer_hits?(computers_hand)
+
+      deck = get_shuffled_deck if deck.count == 0
+      computers_hand << get_card(deck)
+
+      print_hands(players_hand, computers_hand)
+      break if check_exit_cases(computers_hand, :computer, is_exit)
+
+      if !is_computer_hits?(computers_hand)
+        check_score(players_hand, computers_hand)
+        break
+      end
+
     else
       check_score(players_hand, computers_hand)
-      is_exit = true
+      break 
     end
-    
+
   end
 
-end while is_exit == false
-
-puts "END"
-
-
-
+  is_exit = "false"
+  puts "Do you want to play more?"
+end while gets.chomp.downcase == "y"
 
