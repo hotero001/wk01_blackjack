@@ -23,6 +23,10 @@ def get_shuffled_deck()
  deck.shuffle!
 end
 
+def check_n_deck(deck)
+  deck = get_shuffled_deck if deck.count == 0
+end
+
 def get_card(deck)
   deck.pop
 end
@@ -140,7 +144,7 @@ begin
           
     if choice == :hit
       
-      deck = get_shuffled_deck if deck.count == 0
+      check_n_deck(deck)
       players_hand << get_card(deck)
 
       print_hands(players_hand, computers_hand)
@@ -155,7 +159,7 @@ begin
 
     if is_computer_hits?(computers_hand)
 
-      deck = get_shuffled_deck if deck.count == 0
+      check_n_deck(deck)
       computers_hand << get_card(deck)
 
       print_hands(players_hand, computers_hand)
@@ -174,6 +178,5 @@ begin
   end
 
   is_exit = "false"
-  puts "Do you want to play more?"
+  puts "Do you want to play more? (y/n)"
 end while gets.chomp.downcase == "y"
-
