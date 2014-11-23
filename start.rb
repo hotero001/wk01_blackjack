@@ -24,7 +24,8 @@ def get_shuffled_deck()
 end
 
 def check_n_deck(deck)
-  deck = get_shuffled_deck if deck.count == 0
+  deck = get_shuffled_deck if deck.count <= 4
+  deck
 end
 
 def get_card(deck)
@@ -119,8 +120,9 @@ end
 
 deck = []
 is_exit = "false"
+choice = nil
 
-deck = get_shuffled_deck
+deck = check_n_deck(deck)
 
 begin
 
@@ -128,10 +130,8 @@ begin
   computers_hand = []
 
   # small cheat - if the deck is almost empty - add another deck #
-  deck << get_shuffled_deck if deck.count < 4
+  deck = check_n_deck(deck)
   2.times { players_hand << get_card(deck) && computers_hand << get_card(deck) }
-
-  choice = :hit
 
   # Player's part #
   begin
@@ -144,7 +144,7 @@ begin
           
     if choice == :hit
       
-      check_n_deck(deck)
+      deck = check_n_deck(deck)
       players_hand << get_card(deck)
 
       print_hands(players_hand, computers_hand)
@@ -159,7 +159,7 @@ begin
 
     if is_computer_hits?(computers_hand)
 
-      check_n_deck(deck)
+      deck = check_n_deck(deck)
       computers_hand << get_card(deck)
 
       print_hands(players_hand, computers_hand)
@@ -176,7 +176,7 @@ begin
     end
 
   end
-
+  p deck.count
   is_exit = "false"
   puts "Do you want to play more? (y/n)"
 end while gets.chomp.downcase == "y"
