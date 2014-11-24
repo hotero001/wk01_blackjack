@@ -12,12 +12,14 @@ def get_shuffled_deck()
 
   deck = suits.product(cards)
 
-  j = 0
-  (1..4).each do 
-    (0..8).each { |i| deck[j] << (i + 2) && j += 1 }
-    (9..11).each { deck[j] << 10 && j += 1 }
-    deck[j] << 1
-    j += 1
+  deck.each do |card|
+    if card[1].is_a?(Fixnum)
+      card << card[1]
+    elsif card[1] == :a
+      card << 1
+    else
+      card << 10
+    end
   end
 
  deck.shuffle!
@@ -64,7 +66,7 @@ def is_computer_hits?(hand)
   true if value_in_hand(hand) < DEALERS_LIMIT
 end
 
-def check_exit_cases(hand, player, is_exit)
+def is_exit_case?(hand, player, is_exit)
   
   if value_in_hand(hand) == BLACK_JACK
     player == :player ? puts("You wins!") : puts("Computer wins!")
@@ -136,8 +138,8 @@ begin
   begin
 
     print_hands(players_hand, computers_hand)
-    break if check_exit_cases(players_hand, :player, is_exit) 
-    break if check_exit_cases(computers_hand, :computer, is_exit)
+    break if is_exit_case?(players_hand, :player, is_exit) 
+    break if is_exit_case?(computers_hand, :computer, is_exit)
     
     choice = hit_or_stay?
           
@@ -147,7 +149,7 @@ begin
       players_hand << get_card(deck)
 
       print_hands(players_hand, computers_hand)
-      break if check_exit_cases(players_hand, :player, is_exit)
+      break if is_exit_case?(players_hand, :player, is_exit)
 
     end
 
@@ -162,7 +164,7 @@ begin
       computers_hand << get_card(deck)
 
       print_hands(players_hand, computers_hand)
-      break if check_exit_cases(computers_hand, :computer, is_exit)
+      break if is_exit_case?(computers_hand, :computer, is_exit)
 
       if !is_computer_hits?(computers_hand)
         check_score(players_hand, computers_hand)
